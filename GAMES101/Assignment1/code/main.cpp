@@ -27,11 +27,11 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
     // TODO: Implement this function
     // Create the model matrix for rotating the triangle around the Z axis.
     // Then return it.
-
-    model(0, 0) = cos(rotation_angle * MY_PI  / 180);
-    model(0, 1) = -sin(rotation_angle *MY_PI  / 180);
-    model(1, 0) = sin(rotation_angle * MY_PI  / 180);
-    model(1, 1) = cos(rotation_angle * MY_PI / 180); 
+    float rotation_angle_rad = rotation_angle * MY_PI  / 180;
+    model(0, 0) = cos(rotation_angle_rad);
+    model(0, 1) = -sin(rotation_angle_rad);
+    model(1, 0) = sin(rotation_angle_rad);
+    model(1, 1) = cos(rotation_angle_rad); 
 
     return model;
 }
@@ -46,12 +46,12 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     // TODO: Implement this function
     // Create the projection matrix for the given parameters.
     // Then return it.
-    float t = abs(zNear) * tan(eye_fov * MY_PI / 180);
+    float t = abs(zNear) * tan(eye_fov * MY_PI / (180*2));
     float r = aspect_ratio * t;
     float l = -r;
     float b = -t;
-    float n = zNear;
-    float f = zFar;
+    float n = -zNear;
+    float f = -zFar;
     projection(0, 0) = 2 * n / (r - l);
     projection(0, 2) = (l + r) / (l - r);
     projection(1, 1) = 2 * n / (t - b);
@@ -61,6 +61,17 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     projection(3, 2) = 1.0;
     projection(3, 3) = 0.0;
     return projection;
+}
+
+Eigen::Matrix4f get_model_matrix_anyaxis(Vector3f axis, float angle)
+{
+    Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
+    float rotation_angle_rad = angle * MY_PI  / 180;
+    Eigen::Matrix3f R_screw;
+    R_screw << 0.0, -axis.z(), axis.y(), axis.z(), 0.0, -axis.x(), -axis.y(), axis.x(), 0.0;
+    Eigen::Matrix3f E = Eigen::Matrix3f::Identity();
+    model.block(0,0,3,3) = E + sin(rotation_angle_rad) * R_screw + (1 - cos(rotation_angle_rad)) * R_screw * R_screw;
+    return model;
 }
 
 int main(int argc, const char** argv)
@@ -75,8 +86,6 @@ int main(int argc, const char** argv)
         if (argc == 4) {
             filename = std::string(argv[3]);
         }
-        else
-            return 0;
     }
 
     rst::rasterizer r(700, 700);
@@ -97,6 +106,7 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
+        // r.set_model(get_model_matrix_anyaxis(Eigen::Vector3f(1, 0, 0), angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -113,6 +123,7 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         r.set_model(get_model_matrix(angle));
+        // r.set_model(get_model_matrix_anyaxis(Eigen::Vector3f(1, 0, 0), angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 

@@ -37,7 +37,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
     // TODO: Implement this function
     // Create the projection matrix for the given parameters.
     // Then return it.
-    float t = abs(zNear) * tan(eye_fov * MY_PI / 180);
+    float t = abs(zNear) * tan(eye_fov * MY_PI / (180 * 2));
     float r = aspect_ratio * t;
     float l = -r;
     float b = -t;
@@ -139,7 +139,7 @@ int main(int argc, const char** argv)
         cv::imshow("image", image);
         key = cv::waitKey(10);
 
-        //std::cout << "frame count: " << frame_count++ << '\n';
+       std::cout << "frame count: " << frame_count++ << '\n';
     }
 
     return 0;
