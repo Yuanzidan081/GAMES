@@ -149,30 +149,35 @@ void rst::rasterizer::draw(rst::pos_buf_id pos_buffer, rst::ind_buf_id ind_buffe
     {
         Triangle t;
 
+        // 定义了三角形的顶点的变换后的位置的数组
         Eigen::Vector4f v[] = {
                 mvp * to_vec4(buf[i[0]], 1.0f),
                 mvp * to_vec4(buf[i[1]], 1.0f),
                 mvp * to_vec4(buf[i[2]], 1.0f)
         };
-
+        //齐次坐标的归一化
         for (auto& vec : v) {
             vec /= vec.w();
         }
 
+        // 这里把三角形的坐标从[-1,-1]映射到了[0,width]*[0, height]，屏幕的左下角使[0,0]，
+        // x轴朝右，y轴朝上
         for (auto & vert : v)
         {
             vert.x() = 0.5*width*(vert.x()+1.0);
             vert.y() = 0.5*height*(vert.y()+1.0);
-            vert.z() = vert.z() * f1 + f2;
+            vert.z() = -vert.z() * f1 + f2;// 这里原来是 vert.z() = vert.z() * f1 + f2;助教说应该加个负号，否则作业2会有问题
         }
 
+        // 设置三角形的顶点坐标
         for (int i = 0; i < 3; ++i)
         {
-            t.setVertex(i, v[i].head<3>());
-            t.setVertex(i, v[i].head<3>());
+            // 这里写的代码有重复
+            //t.setVertex(i, v[i].head<3>());
+            //t.setVertex(i, v[i].head<3>());
             t.setVertex(i, v[i].head<3>());
         }
-
+        // 设置三角形的顶点颜色
         t.setColor(0, 255.0,  0.0,  0.0);
         t.setColor(1, 0.0  ,255.0,  0.0);
         t.setColor(2, 0.0  ,  0.0,255.0);
