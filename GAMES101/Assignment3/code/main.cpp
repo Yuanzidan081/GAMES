@@ -106,7 +106,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
         // TODO: Get the texture value at the texture coordinates of the current fragment
         float u = payload.tex_coords[0];
         float v = payload.tex_coords[1];
-        return_color = payload.texture->getColor(u, v);
+        return_color = payload.texture->getColorBilinear(u, v);
 
     }
     Eigen::Vector3f texture_color;
@@ -171,9 +171,7 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     Eigen::Vector3f normal = payload.normal;
 
     Eigen::Vector3f result_color = {0, 0, 0};
-  /*   auto ambient = Eigen::Vector3f{0, 0, 0};
-    auto diffuse = Eigen::Vector3f{0, 0, 0};
-    auto specular = Eigen::Vector3f{0, 0, 0}; */
+
     for (auto& light : lights)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
@@ -182,14 +180,18 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
         Eigen::Vector3f v = (eye_pos - point).normalized();
         Eigen::Vector3f h = (l + v).normalized();
         Eigen::Vector3f ambient = ka.cwiseProduct(amb_light_intensity);
-        Eigen::Vector3f diffuse = kd.cwiseProduct(light.intensity) / (r.dot(r)) * std::max((float)0.0, normal.dot(l));
-        Eigen::Vector3f specular = ks.cwiseProduct(light.intensity) / (r.dot(r)) * std::max((float)0.0, pow(normal.dot(h), p));
+        Eigen::Vector3f diffuse = kd.cwiseProduct(light.intensity) / (r.dot(r)) * std::max((float)0.0, normal.normalized().dot(l));
+        Eigen::Vector3f specular = ks.cwiseProduct(light.intensity) / (r.dot(r)) * std::max((float)0.0, pow(normal.normalized().dot(h), p));
         // components are. Then, accumulate that result on the *result_color* object.
         
-        result_color = result_color + ambient + diffuse + specular; 
+        result_color = result_color + ambient + diffuse + specular;  
     }
+ 
     return result_color * 255.f;
-}
+
+} 
+
+
 
 
 
@@ -336,11 +338,11 @@ int main(int argc, const char** argv)
 
     std::string filename = "output.png";
     objl::Loader Loader;
-    std::string obj_path = "../models/spot/";
-
+    //std::string obj_path = "../models/spot/";
+    std::string obj_path = "../models/rock/";
     // Load .obj File
-    bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
-
+    //bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    bool loadout = Loader.LoadFile("../models/rock/rock.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
@@ -358,8 +360,8 @@ int main(int argc, const char** argv)
 
     rst::rasterizer r(700, 700);
 
-    auto texture_path = "hmap.jpg";
-
+    //auto texture_path = "hmap.jpg";
+    auto texture_path = "rock.png";
     r.set_texture(Texture(obj_path + texture_path));
 
     std::function<Eigen::Vector3f(fragment_shader_payload)> active_shader = phong_fragment_shader;
@@ -373,7 +375,8 @@ int main(int argc, const char** argv)
         {
             std::cout << "Rasterizing using the texture shader\n";
             active_shader = texture_fragment_shader;
-            texture_path = "spot_texture.png";
+            //texture_path = "spot_texture_512.jpg";
+            texture_path = "rock.png";
             r.set_texture(Texture(obj_path + texture_path));
         }
         else if (argc == 3 && std::string(argv[2]) == "normal")
