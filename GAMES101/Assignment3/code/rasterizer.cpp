@@ -198,8 +198,10 @@ void rst::rasterizer::draw(std::vector<Triangle *> &TriangleList) {
                 mvp * t->v[2]
         };//计算屏幕坐标
 
+
         //Homogeneous division
         for (auto& vec : v) {
+            //std::cout << vec.w() << std::endl;
             vec.x()/=vec.w();
             vec.y()/=vec.w();
             vec.z()/=vec.w();           
@@ -283,9 +285,10 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
     // Use: payload.view_pos = interpolated_shadingcoords;
     // Use: Instead of passing the triangle's color directly to the frame buffer, pass the color to the shaders first to get the final color;
     // Use: auto pixel_color = fragment_shader(payload);
+    
 
     auto v = t.toVector4();
-
+    // auto v = t.v;
        
     // TODO : Find out the bounding box of current triangle.
     int bounding_box_left_x = std::min(v[0].x(), std::min(v[1].x(), v[2].x()));
@@ -298,7 +301,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
                 // If so, use the following code to get the interpolated z value.   
                 auto[alpha, beta, gamma] = computeBarycentric2D(1.0 * x + 0.5, 1.0 * y + 0.5, t.v);
                 float Z = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
-
+                // std::cout << Z << std::endl;
                 // 计算正确的深度值
                 float zp = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
                 zp *= Z; //zp是正确的深度值

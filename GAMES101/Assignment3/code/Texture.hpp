@@ -14,7 +14,15 @@ private:
 public:
     Texture(const std::string& name)
     {
+        // for (auto& t:name)
+        //     std::cout << t << " ";
         image_data = cv::imread(name);
+        // if (image_data.empty()) {
+        //     std::cout << "Failed to read image!" << std::endl;
+        // }
+        // auto numChannels = image_data.channels();
+        // std::cout << "Number of channels: " << numChannels << std::endl;
+
         cv::cvtColor(image_data, image_data, cv::COLOR_RGB2BGR);
         width = image_data.cols;
         height = image_data.rows;

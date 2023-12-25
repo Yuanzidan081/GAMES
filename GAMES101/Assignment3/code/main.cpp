@@ -79,7 +79,19 @@ Eigen::Vector3f vertex_shader(const vertex_shader_payload& payload)
 
 Eigen::Vector3f normal_fragment_shader(const fragment_shader_payload& payload)
 {
-    Eigen::Vector3f return_color = (payload.normal.head<3>().normalized() + Eigen::Vector3f(1.0f, 1.0f, 1.0f)) / 2.f;
+    // Eigen::Vector3f return_color = (payload.normal.head<3>().normalized() + Eigen::Vector3f(1.0f, 1.0f, 1.0f)) / 2.f;
+    // Eigen::Vector3f result;
+    // result << return_color.x() * 255, return_color.y() * 255, return_color.z() * 255;
+    // return result;
+        Eigen::Vector3f return_color = (payload.normal.head<3>().normalized() + Eigen::Vector3f(1.0f, 1.0f, 1.0f)) / 2.f;
+    // if (payload.texture)
+    // {
+    //     // TODO: Get the texture value at the texture coordinates of the current fragment
+    //     return_color = (payload.normal.head<3>().normalized()*255 + payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y())) / 2.f;
+    //     Eigen::Vector3f result;
+    //     result << return_color.x(), return_color.y(), return_color.z();
+    //     return result;
+    // }
     Eigen::Vector3f result;
     result << return_color.x() * 255, return_color.y() * 255, return_color.z() * 255;
     return result;
@@ -106,7 +118,8 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
         // TODO: Get the texture value at the texture coordinates of the current fragment
         float u = payload.tex_coords[0];
         float v = payload.tex_coords[1];
-        return_color = payload.texture->getColorBilinear(u, v);
+        return_color = payload.texture->getColor(u, v);
+        // return_color = payload.texture->getColorBilinear(u, v);
 
     }
     Eigen::Vector3f texture_color;
@@ -121,7 +134,8 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
 
     std::vector<light> lights = {l1, l2};
     Eigen::Vector3f amb_light_intensity{10, 10, 10};
-    Eigen::Vector3f eye_pos{0, 0, 10};
+    // Eigen::Vector3f eye_pos{0, 0, 10};
+    Eigen::Vector3f eye_pos{0, 0, 40};
 
     float p = 150;
 
@@ -162,7 +176,8 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
 
     std::vector<light> lights = {l1, l2};
     Eigen::Vector3f amb_light_intensity{10, 10, 10};
-    Eigen::Vector3f eye_pos{0, 0, 10};
+    // Eigen::Vector3f eye_pos{0, 0, 10};
+    Eigen::Vector3f eye_pos{0, 0, 40};
 
     float p = 150;
 
@@ -207,7 +222,8 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
 
     std::vector<light> lights = {l1, l2};
     Eigen::Vector3f amb_light_intensity{10, 10, 10};
-    Eigen::Vector3f eye_pos{0, 0, 10};
+    // Eigen::Vector3f eye_pos{0, 0, 10};
+    Eigen::Vector3f eye_pos{0, 0, 40};
 
     float p = 150;
 
@@ -282,7 +298,8 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
 
     std::vector<light> lights = {l1, l2};
     Eigen::Vector3f amb_light_intensity{10, 10, 10};
-    Eigen::Vector3f eye_pos{0, 0, 10};
+    // Eigen::Vector3f eye_pos{0, 0, 10};
+    Eigen::Vector3f eye_pos{0, 0, 40};
 
     float p = 150;
 
@@ -305,7 +322,7 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     float x = normal.x();
     float y = normal.y();
     float z = normal.z();
-    Eigen::Vector3f t = {x*y/sqrt(x*x+z*z),sqrt(x*x+z*z),z*y/sqrt(x*x+z*z)};
+    Eigen::Vector3f t = {-x*y/sqrt(x*x+z*z),sqrt(x*x+z*z),-z*y/sqrt(x*x+z*z)};
     Eigen::Vector3f b = normal.cross(t);
     Eigen::Matrix3f TBN;
     TBN << t.x(), b.x(), normal.x(),
@@ -318,7 +335,6 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     float dU = kh * kn * (payload.texture->getColor(u + 1.0/w, v).norm() - payload.texture->getColor(u, v).norm());
     float dV = kh * kn * (payload.texture->getColor(u, v + 1.0 / h).norm() - payload.texture->getColor(u, v). norm());
     Eigen::Vector3f ln = {-dU, -dV, 1};
-    point = point + kn * normal * payload.texture->getColor(u, v).norm();
     normal = (TBN * ln).normalized();
     
 
@@ -338,11 +354,14 @@ int main(int argc, const char** argv)
 
     std::string filename = "output.png";
     objl::Loader Loader;
-    //std::string obj_path = "../models/spot/";
-    std::string obj_path = "../models/rock/";
+    // std::string obj_path = "../models/spot/";
+    // std::string obj_path = "./models/spot/";
+    // std::string obj_path = "../models/rock/";
+    std::string obj_path = "../models/teapot/";//在main文件所在路径debug用.，在build路径命令行输出用..，路径不一样
     // Load .obj File
-    //bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
-    bool loadout = Loader.LoadFile("../models/rock/rock.obj");
+    bool loadout = Loader.LoadFile("../models/teapot/teapot2.obj");//在main文件所在路径debug用.，在build路径命令行输出用..，路径不一样
+    // bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    // bool loadout = Loader.LoadFile("./models/spot/spot_triangulated_good.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
@@ -360,12 +379,13 @@ int main(int argc, const char** argv)
 
     rst::rasterizer r(700, 700);
 
-    //auto texture_path = "hmap.jpg";
-    auto texture_path = "rock.png";
+    // auto texture_path = "hmap.jpg";
+    // auto texture_path = "rock.png";
+    auto texture_path = "texture2.jpg";
     r.set_texture(Texture(obj_path + texture_path));
 
-    std::function<Eigen::Vector3f(fragment_shader_payload)> active_shader = phong_fragment_shader;
-
+    // std::function<Eigen::Vector3f(fragment_shader_payload)> active_shader = phong_fragment_shader;
+    std::function<Eigen::Vector3f(fragment_shader_payload)> active_shader = displacement_fragment_shader;
     if (argc >= 2)
     {
         command_line = true;
@@ -375,8 +395,10 @@ int main(int argc, const char** argv)
         {
             std::cout << "Rasterizing using the texture shader\n";
             active_shader = texture_fragment_shader;
-            //texture_path = "spot_texture_512.jpg";
-            texture_path = "rock.png";
+            // texture_path = "spot_texture_512.jpg";
+            //texture_path = "rock.png";
+            // texture_path = "hmap.jpg";
+            texture_path = "texture2.jpg";
             r.set_texture(Texture(obj_path + texture_path));
         }
         else if (argc == 3 && std::string(argv[2]) == "normal")
@@ -401,8 +423,8 @@ int main(int argc, const char** argv)
         }
     }
 
-    Eigen::Vector3f eye_pos = {0,0,10};
-
+    // Eigen::Vector3f eye_pos = {0,0,10};
+    Eigen::Vector3f eye_pos = {0,0,40};
     r.set_vertex_shader(vertex_shader);
     r.set_fragment_shader(active_shader);
 
