@@ -82,7 +82,7 @@ void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window)
             float dp = std::sqrt(std::pow(p.x - point.x, 2) + std::pow(p.y - point.y, 2));
             float weight = d1 / dp;
             float colorG = window.at<cv::Vec3b>(p.y, p.x)[1];
-            colorG = std::fmax(colorG, weight * 255.0);
+            colorG = std::fmin(colorG, weight * 255.0);
             window.at<cv::Vec3b>(p.y, p.x)[1] = (int)colorG;
         }
  
@@ -110,7 +110,7 @@ int main()
 
         if (control_points.size() == 4) 
         {
-            naive_bezier(control_points, window);
+            // naive_bezier(control_points, window);
             bezier(control_points, window);
 
             cv::imshow("Bezier Curve", window);
