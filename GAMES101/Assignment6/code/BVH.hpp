@@ -39,11 +39,18 @@ public:
 
     // BVHAccel Private Methods
     BVHBuildNode* recursiveBuild(std::vector<Object*>objects);
-
+    BVHBuildNode* recursiveBuild_SAH(std::vector<Object*> objects);
     // BVHAccel Private Data
     const int maxPrimsInNode;
     const SplitMethod splitMethod;
     std::vector<Object*> primitives;
+};
+
+struct Bucket
+{
+    int cnt = 0;
+    Bounds3 bounds;
+    // std::vector<Object*> objVec;
 };
 
 struct BVHBuildNode {
